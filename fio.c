@@ -22,6 +22,7 @@
  *
  */
 #include "fio.h"
+#include "pmem_buffer.h"
 
 int main(int argc, char *argv[], char *envp[])
 {
@@ -42,6 +43,9 @@ int main(int argc, char *argv[], char *envp[])
 	if (parse_options(argc, argv))
 		goto done_key;
 
+	if (create_pmem_pool("/mnt/ramdisk", 1024*1024*1024, 1))
+		goto done_key;
+
 	/*
 	 * line buffer stdout to avoid output lines from multiple
 	 * threads getting mixed
@@ -58,6 +62,8 @@ int main(int argc, char *argv[], char *envp[])
 		ret = fio_handle_clients(&fio_client_ops);
 	} else
 		ret = fio_backend(NULL);
+
+	close_pmem_pool();
 
 done_key:
 	fio_server_destroy_sk_key();

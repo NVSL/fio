@@ -11,6 +11,8 @@
 #include <sys/shm.h>
 #endif
 
+#include "pmem_buffer.h"
+
 void fio_unpin_memory(struct thread_data *td)
 {
 	if (td->pinned_mem) {
@@ -282,6 +284,19 @@ static void free_mem_cudamalloc(struct thread_data *td)
 #endif
 }
 
+static int alloc_mem_nvmm(struct thread_data *td, size_t total_mem)
+{
+	get_pmem_buffer(total_mem, (void**)&td->orig_buffer, NULL, NULL);
+	dprint(FD_MEM, "nvmm %llu %p\n", (unsigned long long) total_mem,
+							td->orig_buffer);
+
+	return td->orig_buffer == NULL;
+}
+
+static void free_mem_nvmm(struct thread_data *td)
+{
+	dprint(FD_MEM, "free nvmm mem %p\n", td->orig_buffer);
+}
 /*
  * Set up the buffer area we need for io.
  */
@@ -323,6 +338,8 @@ int allocate_io_mem(struct thread_data *td)
 		ret = alloc_mem_mmap(td, total_mem);
 	else if (td->o.mem_type == MEM_CUDA_MALLOC)
 		ret = alloc_mem_cudamalloc(td, total_mem);
+	else if (td->o.mem_type == MEM_NVMM)
+		ret = alloc_mem_nvmm(td, total_mem);
 	else {
 		log_err("fio: bad mem type: %d\n", td->o.mem_type);
 		ret = 1;
@@ -354,6 +371,8 @@ void free_io_mem(struct thread_data *td)
 		free_mem_mmap(td, total_mem);
 	else if (td->o.mem_type == MEM_CUDA_MALLOC)
 		free_mem_cudamalloc(td);
+	else if (td->o.mem_type == MEM_NVMM)
+		free_mem_nvmm(td);
 	else
 		log_err("Bad memory type %u\n", td->o.mem_type);
 

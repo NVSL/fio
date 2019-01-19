@@ -2737,6 +2737,10 @@ struct fio_option fio_options[FIO_MAX_OPTS] = {
 			    .help = "Allocate GPU device memory for GPUDirect RDMA",
 			  },
 #endif
+			  { .ival = "nvmm",
+			    .oval = MEM_NVMM,
+			    .help = "Use NVMM for IO buffers",
+			  },
 		  },
 	},
 	{

@@ -29,6 +29,7 @@ enum fio_memtype {
 	MEM_MMAPHUGE,	/* memory mapped huge file */
 	MEM_MMAPSHARED, /* use mmap with shared flag */
 	MEM_CUDA_MALLOC,/* use GPU memory */
+	MEM_NVMM,   /* use NVMM memory */
 };
 
 #define ERROR_STR_MAX	128
